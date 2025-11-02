@@ -9,7 +9,10 @@ from .database import engine, Base
 app = FastAPI(title="INA Backend")
 
 # CORS configuration
-origins = [o.strip() for o in settings.CORS_ORIGINS.split(",")]
+if settings.CORS_ORIGINS:
+    origins = [o.strip() for o in settings.CORS_ORIGINS.split(",")]
+else:
+    origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
