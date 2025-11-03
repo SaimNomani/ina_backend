@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from fastapi.security import OAuth2PasswordRequestForm
 from .. import schemas, models, auth
 from ..database import get_db
 
@@ -30,12 +31,13 @@ async def register(payload: schemas.TenantCreate, db: AsyncSession = Depends(get
 
 
 @router.post("/login", response_model=schemas.Token)
-async def login(payload: schemas.TenantCreate, db: AsyncSession = Depends(get_db)):
-    stmt = select(models.Tenant).where(models.Tenant.email == payload.email)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    # OAuth2PasswordRequestForm provides 'username' and 'password'
+    stmt = select(models.Tenant).where(models.Tenant.email == form_data.username)
     result = await db.execute(stmt)
     tenant = result.scalars().first()
 
-    if not tenant or not auth.verify_password(payload.password, tenant.password_hash):
+    if not tenant or not auth.verify_password(form_data.password, tenant.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
