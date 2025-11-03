@@ -15,4 +15,5 @@ class TenantOut(BaseModel):
 
 class Token(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
+    tenant_id: int

@@ -27,21 +27,29 @@ async def register(payload: schemas.TenantCreate, db: AsyncSession = Depends(get
     await db.refresh(new_tenant)
 
     token = auth.create_access_token({"sub": str(new_tenant.id)})
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "tenant_id": new_tenant.id
+    }
 
 
 @router.post("/login", response_model=schemas.Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    # OAuth2PasswordRequestForm provides 'username' and 'password'
-    stmt = select(models.Tenant).where(models.Tenant.email == form_data.username)
+async def login(payload: schemas.TenantCreate, db: AsyncSession = Depends(get_db)):
+    stmt = select(models.Tenant).where(models.Tenant.email == payload.email)
     result = await db.execute(stmt)
     tenant = result.scalars().first()
 
-    if not tenant or not auth.verify_password(form_data.password, tenant.password_hash):
+    if not tenant or not auth.verify_password(payload.password, tenant.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
 
     token = auth.create_access_token({"sub": str(tenant.id)})
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "tenant_id": tenant.id
+    }
+
