@@ -21,12 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# No need after almebic 
+# 
 # Auto-create tables every time app runs
-@app.on_event("startup")
-async def create_tables():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    print("✅ Tables checked/created successfully.")
+# @app.on_event("startup")
+# async def create_tables():
+#     async with engine.begin() as conn:
+#         await conn.run_sync(Base.metadata.create_all)
+#     print("✅ Tables checked/created successfully.")
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
