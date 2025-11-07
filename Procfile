@@ -1,2 +1,1 @@
-release: alembic upgrade head
-web: uvicorn src.ina_backend.app.main:app --host 0.0.0.0 --port $PORT
+alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
