@@ -4,6 +4,39 @@ from src.ina_backend.app import models, schemas, auth
 from src.ina_backend.app.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import httpx
+
+
+async def fetch_policy_from_tenant(tenant, context_id: str):
+    # avoid double slashes
+    url = f"{tenant.client_policy_api_endpoint.rstrip('/')}/{context_id}"
+    headers = {"Authorization": f"Bearer {tenant.client_api_key}"}
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, headers=headers)
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Unable to connect to tenant endpoint '{url}': {str(e)}"
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=response.status_code,
+            detail=f"Tenant API returned {response.status_code}: {response.text}"
+        )
+
+    try:
+        data = response.json()
+    except ValueError:
+        raise HTTPException(
+            status_code=502,
+            detail="Tenant API did not return valid JSON."
+        )
+
+    return data
+
 
 router = APIRouter()
 
@@ -25,5 +58,8 @@ async def get_policy(
         raise HTTPException(
             status_code=400, detail="Tenant not configured yet")
 
-    url = f"{tenant.client_policy_api_endpoint}/{context_id}"
-    return {"tenant_endpoint": url, "client_api_key": tenant.client_api_key}
+    # url = f"{tenant.client_policy_api_endpoint}/{context_id}"
+    # return {"tenant_endpoint": url, "client_api_key": tenant.client_api_key}
+
+    policy_data = await fetch_policy_from_tenant(tenant, context_id)
+    return policy_data
