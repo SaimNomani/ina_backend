@@ -24,3 +24,8 @@ class TenantConfigIn(BaseModel):
 class TenantConfigOut(BaseModel):
     client_policy_api_endpoint: str | None
     client_api_key: str | None
+
+
+class TenantRuleInput(BaseModel):
+    mam: float
+    asking_price: float

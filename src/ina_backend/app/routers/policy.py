@@ -35,7 +35,8 @@ async def fetch_policy_from_tenant(tenant, context_id: str):
             detail="Tenant API did not return valid JSON."
         )
 
-    return data
+    validated = schemas.TenantRuleInput(**data)
+    return validated
 
 
 router = APIRouter()
