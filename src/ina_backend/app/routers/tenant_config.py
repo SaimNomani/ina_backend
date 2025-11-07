@@ -9,6 +9,7 @@ import secrets
 
 router = APIRouter()
 
+
 @router.post("/configuration", response_model=schemas.TenantConfigOut)
 async def set_tenant_config(
     payload: schemas.TenantConfigIn,
@@ -31,7 +32,8 @@ async def set_tenant_config(
     await db.commit()
 
     # Re-fetch updated tenant as ORM model (important!)
-    refreshed_stmt = select(models.Tenant).where(models.Tenant.id == current_tenant.id)
+    refreshed_stmt = select(models.Tenant).where(
+        models.Tenant.id == current_tenant.id)
     result = await db.execute(refreshed_stmt)
     updated_tenant = result.scalars().first()
 
@@ -41,4 +43,14 @@ async def set_tenant_config(
     return schemas.TenantConfigOut(
         client_policy_api_endpoint=updated_tenant.client_policy_api_endpoint,
         client_api_key=updated_tenant.client_api_key
+    )
+
+
+@router.get("/configuration", response_model=schemas.TenantConfigOut)
+async def get_tenant_config(
+    current_tenant: models.Tenant = Depends(auth.get_current_tenant)
+):
+    return schemas.TenantConfigOut(
+        client_policy_api_endpoint=current_tenant.client_policy_api_endpoint,
+        client_api_key=current_tenant.client_api_key
     )
