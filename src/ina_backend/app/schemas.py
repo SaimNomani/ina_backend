@@ -16,3 +16,11 @@ class TenantOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class TenantConfigIn(BaseModel):
+    client_policy_api_endpoint: str
+
+class TenantConfigOut(BaseModel):
+    client_policy_api_endpoint: str | None
+    client_api_key: str | None

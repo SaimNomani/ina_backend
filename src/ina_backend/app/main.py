@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
-from .routers import auth, policy
+from .routers import auth, policy, tenant_config
 
 import asyncio
 from .database import engine, Base
@@ -33,6 +33,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(policy.router, prefix="/api/v1/policy", tags=["Policy"])
+app.include_router(tenant_config.router, prefix="/api/v1/tenant", tags=["Tenant Config"])
 
 @app.get("/")
 def root():
